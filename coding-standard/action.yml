@@ -1,5 +1,5 @@
-name: "Code Quality"
-
+name: "Coding Standard"
+author: "Graycore"
 description: "A Github Action that runs the Magento Coding Standard."
 
 inputs:
@@ -21,6 +21,10 @@ inputs:
   version:
     required: false
     description: "The version of the coding standard to use. If not provided, will use the latest version."
+  
+  extensions:
+    required: false
+    description: "Run PHPCS against specific extensions"
 
 runs:
   using: composite
@@ -41,7 +45,7 @@ runs:
         php-version: ${{ inputs.php_version }}
         tools: composer:v${{ inputs.composer_version }}, cs2pr
         coverage: none
-
+  
     - name: Install Coding Standard
       shell: bash
       working-directory: standard
@@ -56,10 +60,16 @@ runs:
       shell: bash
       working-directory: project
       id: changed-files
-      run: echo "::set-output name=files::$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)"
+      run: echo "files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
       if: github.event_name == 'pull_request'
 
     - name: Coding Standard Check
       shell: bash
-      run: ../standard/vendor/bin/phpcs --standard=Magento2 -q --report=checkstyle ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
+      id: phpcs
+      run: ../standard/vendor/bin/phpcs --standard=Magento2 --report=checkstyle -q --extensions=${{ inputs.extensions || '*' }} ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
       working-directory: project
+
+    - name: Show PHPCS results in PR
+      shell: bash
+      if: ${{ always() && steps.phpcs.outcome == 'failure' }}
+      run: cs2pr ./phpcs-report.xml
