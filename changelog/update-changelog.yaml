@@ -1,0 +1,37 @@
+name: "Update Changelog"
+on:
+  release:
+    types: [released]
+
+env:
+  GH_TOKEN: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 GH_TOKEN
+        if: env.GH_TOKEN == ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "GH_TOKEN=${GITHUB_TOKEN}" >> $GITHUB_ENV
+
+      - name: 🤘 checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+          token: ${{ env.GH_TOKEN }}
+
+      - name: 📗 Update Changelog
+        uses: stefanzweifel/changelog-updater-action@v1
+        with:
+          latest-version: ${{ github.event.release.tag_name }}
+          release-notes: ${{ github.event.release.body }}
+
+      - name: 🚀 changelog
+        run: |
+          git config --local user.name github-actions
+          git config --local user.email github-actions@github.com
+          git add CHANGELOG.md
+          git commit -m "📝 Update changelog with ${GITHUB_REF#refs/*/}"
+          git push
