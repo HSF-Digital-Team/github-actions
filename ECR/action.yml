@@ -5,6 +5,17 @@ on:
       - '**'
   workflow_dispatch:
 
+inputs:
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  AWS_REGION:
+    required: false
+    default: 'eu-west-3'
+  AWS_ECR_REPO:
+    required: true
+
 jobs:
   Build-image:
     name: Build Docker Image
@@ -19,9 +30,9 @@ jobs:
       - name: Setup AWS ECR Details
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{secrets.AWS_REGION}}
+          aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{inputs.AWS_REGION}}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -32,7 +43,7 @@ jobs:
         with:
            context: .
            push: true
-           tags: ${{ steps.login-ecr.outputs.registry }}/${{secrets.AWS_ECR_REPO}}:${GITHUB_REF##*/}
+           tags: ${{ steps.login-ecr.outputs.registry }}/${{inputs.AWS_ECR_REPO}}:${GITHUB_REF##*/}
            cache-from: type=local,src=/tmp/.buildx-cache
            cache-to: type=local,dest=/tmp/.buildx-cache
            provenance: false
