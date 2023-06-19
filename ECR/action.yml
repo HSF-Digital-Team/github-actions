@@ -14,9 +14,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Branch name
-      run: echo running on branch ${GITHUB_REF##*/}
-
     - name: Checkout
       uses: actions/checkout@v3
 
