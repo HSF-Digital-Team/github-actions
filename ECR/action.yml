@@ -23,6 +23,13 @@ runs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Set branch name as env variable
+      run: |
+        currentbranch=$(echo ${GITHUB_REF##*/})
+        echo "running on $currentbranch"
+        echo "BRANCH=$currentbranch" >> $GITHUB_ENV
+      shell: bash
+
     - name: Setup AWS ECR Details
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -39,7 +46,7 @@ runs:
       with:
          context: .
          push: true
-         tags: ${{ steps.login-ecr.outputs.registry }}/${{inputs.AWS_ECR_REPO}}:${GITHUB_REF##*/}
+         tags: ${{ steps.login-ecr.outputs.registry }}/${{inputs.AWS_ECR_REPO}}:${{ env.BRANCH }}
          cache-from: type=local,src=/tmp/.buildx-cache
          cache-to: type=local,dest=/tmp/.buildx-cache
          provenance: false
