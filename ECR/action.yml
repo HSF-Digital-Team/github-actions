@@ -1,4 +1,6 @@
 name: Build Docker Push
+author: "Julien Anquetil"
+description: "A Github Action that build the docker image of the application and push it to AWS ECR."
 
 inputs:
   AWS_ACCESS_KEY_ID:

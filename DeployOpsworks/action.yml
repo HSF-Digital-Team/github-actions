@@ -1,0 +1,27 @@
+name: "Deploy OpsWorkds"
+author: "Julien Anquetil"
+description: "A Github Action that runs the deploy action of Opsworks."
+
+
+inputs:
+  AWS_ACCESS_KEY_ID:
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    required: true
+  AWS_REGION:
+    required: false
+    default: 'eu-west-3'
+  AWS_STACK_NAME:
+    required: true
+
+
+runs:
+  using: composite
+  steps:
+    - run: bash ${GITHUB_WORKSPACE}/DeployOpsworks/deploy.sh my-folder-name
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ inputs.AWS_REGION }}
+        AWS_STACK_NAME:  ${{ inputs.AWS_STACK_NAME }}
