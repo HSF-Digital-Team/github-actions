@@ -1,4 +1,4 @@
-set -e
+#set -e
 
 #variable a setup :
 REGION=$AWS_REGION
