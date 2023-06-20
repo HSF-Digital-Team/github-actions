@@ -18,6 +18,8 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: ls -la
+      shell: bash
     - run: deploy.sh
       shell: bash
       env:
