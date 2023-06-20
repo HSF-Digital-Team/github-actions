@@ -18,7 +18,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - run: bash ${GITHUB_WORKSPACE}/DeployOpsworks/deploy.sh my-folder-name
+    - run: deploy.sh
       shell: bash
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
