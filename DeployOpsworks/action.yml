@@ -20,9 +20,7 @@ runs:
   steps:
     - run: chmod +x ${{ github.action_path }}/deploy.sh
       shell: bash
-    - run: ls -la ${{ github.action_path }}
-      shell: bash
-    - run: deploy.sh
+    - run: ${{ github.action_path }}/deploy.sh
       shell: bash
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
