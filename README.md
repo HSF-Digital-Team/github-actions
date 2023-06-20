@@ -40,3 +40,26 @@ Add the secret to your repo or organisation Level :
 - AWS_SECRET_ACCESS_KEY
 - AWS_REGION (default is eu-west-3)
 - AWS_ECR_REPO
+
+## DeployOpsworks
+
+### Usage
+This action will launch a deploy on Opsworks.
+Need to add the secret AWS_STACK_NAME with the stack name retrieved from AWS console.
+```
+name: Deploy to OpsWorks
+on:
+  workflow_dispatch:
+
+jobs:
+  Deploy-opsworks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to OpsWorks
+        uses: HSF-Digital-Team/github-actions/DeployOpsworks@main
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.AWS_REGION}}
+          AWS_STACK_NAME: ${{secrets.AWS_STACK_NAME}}
+```
