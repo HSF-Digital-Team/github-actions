@@ -18,7 +18,9 @@ inputs:
 runs:
   using: composite
   steps:
-    - run: deploy.sh
+    - run: chmod +x ${{ github.action_path }}/deploy.sh
+      shell: bash
+    - run: ${{ github.action_path }}/deploy.sh
       shell: bash
       env:
         AWS_ACCESS_KEY_ID: ${{ inputs.AWS_ACCESS_KEY_ID }}
