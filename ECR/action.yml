@@ -15,6 +15,9 @@ inputs:
   PLATFORM:
     required: false
     default: "linux/amd64"
+  TAGNAME:
+    required: false
+    default: ${GITHUB_REF##*/}
 
 runs:
   using: composite
@@ -52,7 +55,7 @@ runs:
          context: .
          push: true
          platforms: ${{inputs.PLATFORM}}
-         tags: ${{ steps.login-ecr.outputs.registry }}/${{inputs.AWS_ECR_REPO}}:${{ env.BRANCH }}
+         tags: ${{ steps.login-ecr.outputs.registry }}/${{inputs.AWS_ECR_REPO}}:${{ inputs.TAGNAME }}
          cache-from: type=gha
          cache-to: type=gha,mode=max
          provenance: false
