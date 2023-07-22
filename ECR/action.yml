@@ -18,9 +18,6 @@ inputs:
   TAGNAME:
     required: false
     default: ${GITHUB_REF##*/}
-  BUILDARGS:
-    required: false
-    default: ''
 
 runs:
   using: composite
@@ -64,4 +61,3 @@ runs:
          cache-from: type=gha
          cache-to: type=gha,mode=max
          provenance: false
-         build-args: ${{inputs.BUILDARGS}}
