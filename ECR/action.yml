@@ -18,6 +18,9 @@ inputs:
   TAGNAME:
     required: false
     default: ${GITHUB_REF##*/}
+  NEWRELIC_APPNAME:
+    required: false
+    default: ''
 
 runs:
   using: composite
