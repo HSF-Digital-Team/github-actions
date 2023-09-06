@@ -51,7 +51,7 @@ runs:
     - name: PHPCompatibility Check
       shell: bash
       id: phpcompatibility
-      run: ../standard/vendor/bin/phpcs --ignore=dev/* --standard=PHPCompatibility --report=checkstyle -q --extensions=php --runtime-set testVersion ${{ inputs.php_version }}  ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || github.workspace/project }} | cs2pr
+      run: ../standard/vendor/bin/phpcs --ignore=dev/* --standard=PHPCompatibility --report=checkstyle -q --extensions=php --runtime-set testVersion ${{ inputs.php_version }}  ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || $GITHUB_WORKSPACE }} | cs2pr
       working-directory: project
 
     - name: Show PHPCompatibility results in PR
