@@ -1,4 +1,4 @@
-!/bin/sh -l
+#!/bin/sh -l
 
 # Copy the matcher to a shared volume with the host; otherwise "add-matcher"
 # can't find it.
