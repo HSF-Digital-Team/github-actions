@@ -34,7 +34,7 @@ runs:
     - name: Install phpcompatibility
       shell: bash
       working-directory: standard
-      run: composer require "phpcompatibility/php-compatibility:*"
+      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
 
     - name: Register Coding Standard
       shell: bash
