@@ -1,9 +1,60 @@
 name: 'PHPCompatibility'
-author: 'ExtDN'
-description: 'performs php static code analysis with the PHPCompatibility Standard'
+author: 'HSFDigital'
+description: 'Performs php static code analysis with the PHPCompatibility Standard'
+inputs:
+  php_version:
+    required: true
+    default: "8.2"
+    description: "PHP version used to do the coding standard check."
+  composer_version:
+    required: true
+    default: "2"
+    description: "The version of composer to use."
+
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-branding:
-  icon: 'code'  
-  color: 'green'
+  using: composite
+  steps:
+    - name: Checkout Project
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        path: project
+
+    - name: Create Standard Directory
+      shell: bash
+      run: mkdir standard
+
+    - name: Set PHP Version
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php_version }}
+        tools: composer:v${{ inputs.composer_version }}, cs2pr
+        coverage: none
+
+    - name: Install phpcompatibility
+      shell: bash
+      working-directory: standard
+      run: composer require "phpcompatibility/php-compatibility:*"
+
+    - name: Register Coding Standard
+      shell: bash
+      working-directory: standard
+      run: vendor/bin/phpcs --config-set installed_paths ${{ github.workspace }}/standard/vendor/phpcompatibility/php-compatibility
+
+    - name: Get Changed Files
+      shell: bash
+      working-directory: project
+      id: changed-files
+      run: echo "files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+      if: github.event_name == 'pull_request'
+
+    - name: PHPCompatibility Check
+      shell: bash
+      id: phpcompatibility
+      run: ../standard/vendor/bin/phpcs --ignore=dev/* --standard=PHPCompatibility --report=checkstyle -q --extensions=php --runtime-set testVersion ${{ inputs.php_version }} $GITHUB_WORKSPACE | cs2pr
+      working-directory: project
+
+    - name: Show PHPCompatibility results in PR
+      shell: bash
+      if: ${{ always() && steps.phpcompatibility.outcome == 'failure' }}
+      run: cs2pr ./phpcs-report.xml
