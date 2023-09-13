@@ -20,6 +20,7 @@ inputs:
 
   version:
     required: false
+    default: "31"
     description: "The version of the coding standard to use. If not provided, will use the latest version."
   
   extensions:
