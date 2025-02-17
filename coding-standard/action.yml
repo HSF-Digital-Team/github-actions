@@ -50,7 +50,7 @@ runs:
     - name: Install Coding Standard
       shell: bash
       working-directory: standard
-      run: composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer && composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
+      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
 
     - name: Register Coding Standard
       shell: bash
