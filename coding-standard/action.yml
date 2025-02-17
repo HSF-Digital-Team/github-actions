@@ -41,9 +41,9 @@ runs:
       run: |
         mkdir standard
         # Initialize composer.json
-        composer init --no-interaction --name=temp/coding-standards
+        composer init --no-interaction --no-plugins --name=temp/coding-standards
         # Configure plugin allowance
-        composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
 
     - name: Set PHP Version
       uses: shivammathur/setup-php@v2
