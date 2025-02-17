@@ -5,7 +5,7 @@ description: "A Github Action that runs the Magento Coding Standard."
 inputs:
   php_version:
     required: true
-    default: "8.1"
+    default: "8.3"
     description: "PHP version used to do the coding standard check."
 
   composer_version:
@@ -38,7 +38,12 @@ runs:
 
     - name: Create Standard Directory
       shell: bash
-      run: mkdir standard
+      run: |
+        mkdir standard
+        # Initialize composer.json
+        composer init --no-interaction --name=temp/coding-standards
+        # Configure plugin allowance
+        composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
 
     - name: Set PHP Version
       uses: shivammathur/setup-php@v2
@@ -50,9 +55,7 @@ runs:
     - name: Install coding standards
       shell: bash
       working-directory: standard
-      run: |
-        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-        composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
+      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
         
     - name: Register Coding Standard
       shell: bash
