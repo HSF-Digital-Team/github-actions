@@ -52,11 +52,21 @@ runs:
       shell: bash
       working-directory: standard
       run: |
-        # Initialize composer.json
-        composer create-project --no-plugins --no-dev magento/magento-coding-standard magento/magento-coding-standard:${{ inputs.version || '*' }}
-        # Configure plugin allowance
-        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        # Initialize composer.json with pre-configured plugins
+        cat > composer.json << 'EOF'
+        {
+            "name": "temp/coding-standards",
+            "config": {
+                "allow-plugins": {
+                    "dealerdirect/phpcodesniffer-composer-installer": true
+                }
+            }
+        }
+        EOF
+        
+        # Install the coding standard
         composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
+        
         
     - name: Register Coding Standard
       shell: bash
