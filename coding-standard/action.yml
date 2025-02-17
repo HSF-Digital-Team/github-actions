@@ -5,7 +5,7 @@ description: "A Github Action that runs the Magento Coding Standard."
 inputs:
   php_version:
     required: true
-    default: "8.3"
+    default: "8.1"
     description: "PHP version used to do the coding standard check."
 
   composer_version:
@@ -20,7 +20,7 @@ inputs:
 
   version:
     required: false
-    default: "36"
+    default: "31"
     description: "The version of the coding standard to use. If not provided, will use the latest version."
   
   extensions:
@@ -38,8 +38,7 @@ runs:
 
     - name: Create Standard Directory
       shell: bash
-      run: |
-        mkdir standard
+      run: mkdir standard
 
     - name: Set PHP Version
       uses: shivammathur/setup-php@v2
@@ -47,27 +46,12 @@ runs:
         php-version: ${{ inputs.php_version }}
         tools: composer:v${{ inputs.composer_version }}, cs2pr
         coverage: none
-        
-    - name: Install coding standards
+  
+    - name: Install Coding Standard
       shell: bash
       working-directory: standard
-      run: |
-        # Initialize composer.json with pre-configured plugins
-        cat > composer.json << 'EOF'
-        {
-            "name": "temp/coding-standards",
-            "config": {
-                "allow-plugins": {
-                    "dealerdirect/phpcodesniffer-composer-installer": true
-                }
-            }
-        }
-        EOF
-        
-        # Install the coding standard
-        composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
-        
-        
+      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
+
     - name: Register Coding Standard
       shell: bash
       working-directory: standard
@@ -77,13 +61,13 @@ runs:
       shell: bash
       working-directory: project
       id: changed-files
-      run: echo "files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E '\.(php|phtml)$' | xargs)" >> $GITHUB_OUTPUT
+      run: echo "files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
       if: github.event_name == 'pull_request'
 
     - name: Coding Standard Check
       shell: bash
       id: phpcs
-      run: ../standard/vendor/bin/phpcs --exclude=Generic.Files.LineLength --ignore=dev/*,docker/*,CHANGELOG.md --standard=Magento2 --report=checkstyle -q --extensions=${{ inputs.extensions || '*' }} ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
+      run: ../standard/vendor/bin/phpcs --exclude=Generic.Files.LineLength --ignore=dev/*,docker/* --standard=Magento2 --report=checkstyle -q --extensions=${{ inputs.extensions || '*' }} ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
       working-directory: project
 
     - name: Show PHPCS results in PR
