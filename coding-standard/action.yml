@@ -46,12 +46,14 @@ runs:
         php-version: ${{ inputs.php_version }}
         tools: composer:v${{ inputs.composer_version }}, cs2pr
         coverage: none
-  
-    - name: Install Coding Standard
+        
+    - name: Install coding standards
       shell: bash
-      working-directory: standard
-      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
-
+      run: |
+        composer create-project --no-plugins --no-dev \
+        magento/magento-coding-standard \
+        magento-coding-standard "${{ inputs.version || '*' }}"
+        
     - name: Register Coding Standard
       shell: bash
       working-directory: standard
