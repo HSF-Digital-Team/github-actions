@@ -40,10 +40,6 @@ runs:
       shell: bash
       run: |
         mkdir standard
-        # Initialize composer.json
-        composer init --no-interaction --no-plugins --name=temp/coding-standards
-        # Configure plugin allowance
-        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
 
     - name: Set PHP Version
       uses: shivammathur/setup-php@v2
@@ -55,7 +51,12 @@ runs:
     - name: Install coding standards
       shell: bash
       working-directory: standard
-      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
+      run: |
+        # Initialize composer.json
+        composer create-project --no-plugins --no-dev magento/magento-coding-standard magento/magento-coding-standard:${{ inputs.version || '*' }}
+        # Configure plugin allowance
+        composer config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+        composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
         
     - name: Register Coding Standard
       shell: bash
