@@ -49,6 +49,7 @@ runs:
         
     - name: Install coding standards
       shell: bash
+      working-directory: standard
       run: |
         composer create-project --no-plugins --no-dev \
         magento/magento-coding-standard \
