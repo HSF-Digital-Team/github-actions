@@ -60,7 +60,7 @@ runs:
     - name: Register Coding Standard
       shell: bash
       working-directory: standard
-      run: vendor/bin/phpcs --config-set installed_paths ${{ github.workspace }}/standard/vendor/magento/magento-coding-standard,${{ github.workspace }}/standard/vendor/phpcompatibility/php-compatibility
+      run: vendor/bin/phpcs --config-set installed_paths ${{ github.workspace }}/standard/vendor/magento/magento-coding-standard,${{ github.workspace }}/standard/vendor/phpcompatibility/php-compatibility-fork
 
     - name: Get Changed Files
       shell: bash
@@ -72,7 +72,14 @@ runs:
     - name: Coding Standard Check
       shell: bash
       id: phpcs
-      run: ../standard/vendor/bin/phpcs --exclude=Generic.Files.LineLength --ignore=dev/*,docker/*,setup/*,lib/* --standard=Magento2 --report=checkstyle -q --extensions=${{ inputs.extensions || '*' }} ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
+      run: |
+        ../standard/vendor/bin/phpcs --standard=Magento2 \
+        --exclude=Generic.Files.LineLength \
+        --ignore=dev/*,docker/*,setup/*,lib/*  \
+        --report=checkstyle  \
+        -q \
+        --extensions=${{ inputs.extensions || '*' }} \
+        ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
       working-directory: project
 
     - name: Show PHPCS results in PR
