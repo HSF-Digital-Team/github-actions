@@ -50,17 +50,12 @@ runs:
     - name: Enable dealerdirect/phpcodesniffer-composer-installer plugin
       shell: bash
       working-directory: standard
-      run: composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer  true --global
+      run: composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true --global
       
     - name: Install Coding Standard
       shell: bash
       working-directory: standard
       run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
-
-    - name: Register Coding Standard
-      shell: bash
-      working-directory: standard
-      run: vendor/bin/phpcs --config-set installed_paths ${{ github.workspace }}/standard/vendor/magento/magento-coding-standard,${{ github.workspace }}/standard/vendor/phpcompatibility/php-compatibility-fork
 
     - name: Get Changed Files
       shell: bash
@@ -72,17 +67,21 @@ runs:
     - name: Coding Standard Check
       shell: bash
       id: phpcs
+      continue-on-error: true
       run: |
         ../standard/vendor/bin/phpcs --standard=Magento2 \
         --exclude=Generic.Files.LineLength \
-        --ignore=dev/*,docker/*,setup/*,lib/*  \
-        --report=checkstyle  \
+        --ignore=dev/*,docker/*,setup/*,lib/* \
+        --report=checkstyle \
+        --report-file=phpcs-report.xml \
         -q \
         --extensions=${{ inputs.extensions || '*' }} \
-        ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }} | cs2pr
+        ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }}
       working-directory: project
 
     - name: Show PHPCS results in PR
       shell: bash
-      if: ${{ always() && steps.phpcs.outcome == 'failure' }}
+      # Only run if phpcs step didn't skip (e.g., if there's no code to check) and the report file exists
+      if: ${{ always() && steps.phpcs.outcome != 'skipped' && hashFiles('project/phpcs-report.xml') != '' }}
       run: cs2pr ./phpcs-report.xml
+      working-directory: project # Add working directory here
