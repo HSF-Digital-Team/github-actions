@@ -4,7 +4,7 @@ description: 'Performs php static code analysis with the PHPCompatibility Standa
 inputs:
   php_version:
     required: true
-    default: "8.2"
+    default: "8.4"
     description: "PHP version used to do the coding standard check."
   composer_version:
     required: true
