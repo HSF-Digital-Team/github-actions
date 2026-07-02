@@ -5,7 +5,7 @@ description: "A Github Action that runs the Magento Coding Standard."
 inputs:
   php_version:
     required: true
-    default: "8.3"
+    default: "8.4"
     description: "PHP version used to do the coding standard check."
 
   composer_version:
@@ -31,7 +31,7 @@ runs:
   using: composite
   steps:
     - name: Checkout Project
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
         path: project
