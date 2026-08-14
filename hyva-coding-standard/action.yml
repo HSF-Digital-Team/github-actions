@@ -1,23 +1,37 @@
-name: 'PHPCompatibility'
+name: 'Hyva Coding Standard'
 author: 'HSFDigital'
-description: 'Performs php static code analysis with the PHPCompatibility Standard'
+description: 'Performs php/phtml static code analysis with the Hyva Themes Coding Standard.'
+
 inputs:
   php_version:
     required: true
     default: "8.4"
     description: "PHP version used to do the coding standard check."
+
   composer_version:
     required: true
     default: "2"
     description: "The version of composer to use."
-  version:
-    required: false
-    default: "40"
-    description: "The version of the magento-coding-standard package (which provides the PHPCompatibility standard) to use. If not provided, will use the latest version."
+
   path:
     required: false
-    default: ${{ github.workspace }}/project
+    default: ${{ github.workspace }}/project/app/design
     description: "The directory (relative to the project root) in which the coding standard will be checked. Used when the event is not a pull request."
+
+  extensions:
+    required: false
+    default: "phtml,php"
+    description: "Comma separated list of file extensions to check."
+
+  ignore:
+    required: false
+    default: "*/node_modules/*"
+    description: "Comma separated list of patterns to ignore."
+
+  exclude:
+    required: false
+    default: "Generic.Files.LineLength,Magento2.Annotation.MethodAnnotationStructure"
+    description: "Comma separated list of sniffs to exclude."
 
 runs:
   using: composite
@@ -28,31 +42,17 @@ runs:
         fetch-depth: 0
         path: project
 
-    - name: Create Standard Directory
-      shell: bash
-      run: mkdir standard
-
     - name: Set PHP Version
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ inputs.php_version }}
+        extensions: imagick
         tools: composer:v${{ inputs.composer_version }}, cs2pr
         coverage: none
 
-    - name: Enable dealerdirect/phpcodesniffer-composer-installer plugin
+    - name: Install Hyva Coding Standard
       shell: bash
-      working-directory: standard
-      run: composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true --global
-
-    - name: Install phpcompatibility
-      shell: bash
-      working-directory: standard
-      run: composer require "magento/magento-coding-standard:${{ inputs.version || '*' }}"
-
-    - name: Register Coding Standard
-      shell: bash
-      working-directory: standard
-      run: vendor/bin/phpcs --config-set installed_paths ${{ github.workspace }}/standard/vendor/phpcompatibility/php-compatibility
+      run: composer create-project --no-plugins --no-dev --no-interaction hyva-themes/hyva-coding-standard ${{ github.workspace }}/hyva-cs
 
     - name: Get Changed Files
       shell: bash
@@ -64,26 +64,28 @@ runs:
       run: echo "files=$(git diff --name-only --diff-filter=ACMRT "$BASE_SHA" "$HEAD_SHA" | xargs)" >> "$GITHUB_OUTPUT"
       if: github.event_name == 'pull_request'
 
-    - name: PHPCompatibility Check
+    - name: Hyva Coding Standard Check
       shell: bash
-      id: phpcompatibility
+      id: hyva
       continue-on-error: true
       env:
-        PHP_TEST_VERSION: ${{ inputs.php_version }}
+        PHPCS_IGNORE: ${{ inputs.ignore }}
+        PHPCS_EXCLUDE: ${{ inputs.exclude }}
+        PHPCS_EXTENSIONS: ${{ inputs.extensions }}
         PHPCS_TARGET: ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }}
       run: |
-        ../standard/vendor/bin/phpcs --ignore=dev/* \
-        --standard=PHPCompatibility \
+        ../hyva-cs/vendor/bin/phpcs --ignore="$PHPCS_IGNORE" \
+        --standard=HyvaThemes \
+        --exclude="$PHPCS_EXCLUDE" \
         --report=checkstyle \
         --report-file=phpcs-report.xml \
         -q \
-        --extensions=php \
-        --runtime-set testVersion "$PHP_TEST_VERSION" \
+        --extensions="$PHPCS_EXTENSIONS" \
         -- $PHPCS_TARGET
       working-directory: project
 
-    - name: Show PHPCompatibility results in PR
+    - name: Show Hyva Coding Standard results in PR
       shell: bash
-      if: ${{ always() && steps.phpcompatibility.outcome != 'skipped' && hashFiles('project/phpcs-report.xml') != '' }}
+      if: ${{ always() && steps.hyva.outcome != 'skipped' && hashFiles('project/phpcs-report.xml') != '' }}
       run: cs2pr ./phpcs-report.xml
       working-directory: project

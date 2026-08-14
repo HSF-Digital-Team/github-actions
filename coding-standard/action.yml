@@ -61,13 +61,19 @@ runs:
       shell: bash
       working-directory: project
       id: changed-files
-      run: echo "files=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.sha }}
+      run: echo "files=$(git diff --name-only --diff-filter=ACMRT "$BASE_SHA" "$HEAD_SHA" | xargs)" >> "$GITHUB_OUTPUT"
       if: github.event_name == 'pull_request'
 
     - name: Coding Standard Check
       shell: bash
       id: phpcs
       continue-on-error: true
+      env:
+        PHPCS_EXTENSIONS: ${{ inputs.extensions || '*' }}
+        PHPCS_TARGET: ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }}
       run: |
         ../standard/vendor/bin/phpcs --standard=Magento2 \
         --exclude=Generic.Files.LineLength \
@@ -75,8 +81,8 @@ runs:
         --report=checkstyle \
         --report-file=phpcs-report.xml \
         -q \
-        --extensions=${{ inputs.extensions || '*' }} \
-        ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }}
+        --extensions="$PHPCS_EXTENSIONS" \
+        -- $PHPCS_TARGET
       working-directory: project
 
     - name: Show PHPCS results in PR
