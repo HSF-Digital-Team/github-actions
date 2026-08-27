@@ -27,6 +27,11 @@ inputs:
     required: false
     description: "Run PHPCS against specific extensions"
 
+  ignore:
+    required: false
+    default: "dev/*,docker/*,setup/*,lib/*,app/autoload.php,app/bootstrap.php,app/etc/NonComposerComponentRegistration.php,pub/*.php,pub/errors/*.php,phpserver/*.php"
+    description: "Comma separated list of patterns to ignore. Defaults to Magento's own bootstrap and entry-point files, which are shipped by magento/magento2-base and therefore not fixable in a project repo."
+
 runs:
   using: composite
   steps:
@@ -73,11 +78,12 @@ runs:
       continue-on-error: true
       env:
         PHPCS_EXTENSIONS: ${{ inputs.extensions || '*' }}
+        PHPCS_IGNORE: ${{ inputs.ignore }}
         PHPCS_TARGET: ${{ github.event_name == 'pull_request' && steps.changed-files.outputs.files || inputs.path }}
       run: |
         ../standard/vendor/bin/phpcs --standard=Magento2 \
         --exclude=Generic.Files.LineLength \
-        --ignore=dev/*,docker/*,setup/*,lib/* \
+        --ignore="$PHPCS_IGNORE" \
         --report=checkstyle \
         --report-file=phpcs-report.xml \
         -q \
