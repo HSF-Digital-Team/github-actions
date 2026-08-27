@@ -34,6 +34,12 @@ Inputs:
 - `path` (required, default `app/code`) — directory checked when the event is not a pull request
 - `version` — `magento/magento-coding-standard` version to install (default `37`)
 - `extensions` — restrict PHPCS to specific extensions (default `*`)
+- `ignore` — comma separated PHPCS ignore patterns. Defaults to
+  `dev/*,docker/*,setup/*,lib/*` plus Magento's own bootstrap and entry-point files
+  (`app/autoload.php`, `app/bootstrap.php`, `app/etc/NonComposerComponentRegistration.php`,
+  `pub/*.php`, `pub/errors/*.php`, `phpserver/*.php`), which are shipped by
+  `magento/magento2-base` and cannot be fixed in a project repo. Pass your own list to extend or
+  replace it — the value replaces the default, so repeat the defaults you still want.
 
 ## PHPCompatibility
 Runs the [PHPCompatibility](https://github.com/PHPCompatibility/PHPCompatibility) standard against
