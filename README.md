@@ -115,7 +115,7 @@ Magento PHP and Hyva templates together.
 ## Update Changelog
 Adds release notes to a [Keep a Changelog](https://keepachangelog.com/) file using
 the upstream `stefanzweifel/php-changelog-updater` CLI. Runs on the runner with
-PHP 8.4 and `mbstring`, avoiding the upstream action's floating Docker image.
+PHP 8.5 and `mbstring`, avoiding the upstream action's floating Docker image.
 The CLI download is pinned to a source commit and verified with SHA-256.
 
 ### Usage
@@ -157,7 +157,7 @@ jobs:
 
 Use your repository's release branch in place of `production`. The caller checks
 out the repository and decides how to commit or open a PR; this action only edits
-the changelog. It needs no token or write permissions itself. PHP 8.4 becomes the
+the changelog. It needs no token or write permissions itself. PHP 8.5 becomes the
 runner's active PHP version. Supported runners: Ubuntu with Bash, curl and PHP
 support through `shivammathur/setup-php`.
 
