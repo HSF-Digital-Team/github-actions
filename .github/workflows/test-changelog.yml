@@ -1,0 +1,59 @@
+name: Test changelog action
+on:
+  push:
+    paths:
+      - changelog/**
+      - .github/workflows/test-changelog.yml
+  pull_request:
+    paths:
+      - changelog/**
+      - .github/workflows/test-changelog.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Create fixture
+        run: |
+          mkdir -p 'fixture directory'
+          cat > 'fixture directory/CHANGELOG.md' <<'EOF'
+          # Changelog
+
+          ## [Unreleased]
+
+          ## [v1.0.0] - 2026-01-01
+
+          - Existing release.
+
+          [Unreleased]: https://github.com/example/project/compare/v1.0.0...HEAD
+          [v1.0.0]: https://github.com/example/project/releases/tag/v1.0.0
+          EOF
+      - uses: ./changelog
+        with:
+          latest-version: v1.1.0
+          release-date: '2026-11-19'
+          path-to-changelog: fixture directory/CHANGELOG.md
+          release-notes: |
+            ## What's Changed
+            - Preserve accents: dentaire amélioré.
+            - Keep literal shell text: $(touch unexpected-file) and `touch unexpected-file`.
+      - name: Verify release content and compare links
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          content = Path('fixture directory/CHANGELOG.md').read_text()
+          assert re.search(r'^## \[v1\.1\.0\]\([^\n]+\) - 2026-11-19$', content, re.M), content
+          assert re.search(r'^## \[v1\.0\.0\]\([^\n]+\) - 2026-01-01$', content, re.M), content
+          assert 'Existing release.' in content, content
+          assert 'dentaire amélioré.' in content, content
+          assert '$(touch unexpected-file)' in content, content
+          assert '`touch unexpected-file`' in content, content
+          assert 'https://github.com/example/project/compare/v1.1.0...HEAD' in content, content
+          assert 'https://github.com/example/project/compare/v1.0.0...v1.1.0' in content, content
+          assert not Path('unexpected-file').exists()
+          PY

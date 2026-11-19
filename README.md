@@ -113,4 +113,72 @@ Both `Coding Standard` and `Hyva Coding Standard` can run as separate steps in t
 Magento PHP and Hyva templates together.
 
 ## Update Changelog
-On each release, the file CHANGELOG.md is updated with the content of the release tag.
+Adds release notes to a [Keep a Changelog](https://keepachangelog.com/) file using
+the upstream `stefanzweifel/php-changelog-updater` CLI. Runs on the runner with
+PHP 8.4 and `mbstring`, avoiding the upstream action's floating Docker image.
+The CLI download is pinned to a source commit and verified with SHA-256.
+
+### Usage
+
+Replace `stefanzweifel/changelog-updater-action@v1` with
+`HSF-Digital-Team/github-actions/changelog@main`. Existing `latest-version`
+and `release-notes` inputs can stay as they are, or be omitted for release events.
+
+```yaml
+name: Update Changelog
+on:
+  release:
+    types: [released]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: production
+
+      - name: Update Changelog
+        uses: HSF-Digital-Team/github-actions/changelog@main
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.PUSH_TO_PROTECTED_BRANCH }}
+          base: production
+          branch: upgrade-changelog
+          title: 'docs(changelog): update changelog for ${{ github.event.release.tag_name }}'
+          add-paths: CHANGELOG.md
+```
+
+Use your repository's release branch in place of `production`. The caller checks
+out the repository and decides how to commit or open a PR; this action only edits
+the changelog. It needs no token or write permissions itself. PHP 8.4 becomes the
+runner's active PHP version. Supported runners: Ubuntu with Bash, curl and PHP
+support through `shivammathur/setup-php`.
+
+Inputs:
+
+| Input | Default | Description |
+| --- | --- | --- |
+| `latest-version` | Release event tag | Release tag; must be provided outside a release event. |
+| `release-notes` | Release event body | Markdown notes; may be empty. |
+| `path-to-changelog` | `CHANGELOG.md` | Path to the changelog in the checked-out repository. |
+| `release-date` | Today | Optional date in `YYYY-MM-DD` format. |
+
+For `workflow_dispatch`, explicitly pass the version and notes, since manual
+runs do not have a release event payload. For example, expose `tag` and `notes`
+as workflow inputs and pass `${{ inputs.tag }}` and `${{ inputs.notes }}` to
+`latest-version` and `release-notes` respectively.
+
+For a private actions repository, enable access from the consuming repositories
+under **Settings → Actions → General → Access**. Use a commit SHA instead of
+`@main` when you need an immutable action version.
+
+The smoke test in `.github/workflows/test-changelog.yml` exercises the composite
+action, checking multiline notes, accents, literal shell syntax, paths containing
+spaces, preservation of existing releases, and updated comparison links.

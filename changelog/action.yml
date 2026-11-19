@@ -1,0 +1,48 @@
+name: Update Changelog
+author: HSFDigital
+description: Add release notes to a Keep a Changelog file using a controlled PHP runtime.
+inputs:
+  latest-version:
+    description: Release tag. Defaults to the tag from the release event.
+    required: false
+    default: ${{ github.event.release.tag_name }}
+  release-notes:
+    description: Markdown release notes. Defaults to the body of the release event.
+    required: false
+    default: ${{ github.event.release.body }}
+  path-to-changelog:
+    description: Changelog path relative to the checked-out repository.
+    required: false
+    default: CHANGELOG.md
+  release-date:
+    description: Release date (YYYY-MM-DD). Defaults to today.
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: Validate release inputs
+      shell: bash
+      env:
+        RELEASE_TAG: ${{ inputs.latest-version }}
+      run: |
+        if [[ -z "$RELEASE_TAG" ]]; then
+          echo '::error::latest-version is required outside a release event (including workflow_dispatch).'
+          exit 1
+        fi
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        extensions: mbstring
+        coverage: none
+
+    - name: Update changelog
+      shell: bash
+      env:
+        RELEASE_TAG: ${{ inputs.latest-version }}
+        RELEASE_NOTES: ${{ inputs.release-notes }}
+        CHANGELOG_PATH: ${{ inputs.path-to-changelog }}
+        RELEASE_DATE: ${{ inputs.release-date }}
+      run: bash "$GITHUB_ACTION_PATH/update.sh"
